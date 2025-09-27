@@ -26,102 +26,88 @@ class DisjointSet:
                 self.parent[rootY] = rootX
                 self.rank[rootX] += 1
 
-n=4
-r1=1
-r2=1
-r=1000
-r3=1
-r4=1
-v=20
 
-graph={
-    0: [[1,1,r1], [2,1,r2], [3,0,v]], #nodes connected to 0
-    1: [[0,1,r1], [2,1,r], [3,1,r3]], #nodes connected to 1
-    2: [[0,1,r2], [1,1,r], [3,1,r4]], #nodes connected to 2
-    3: [[0,0,-v], [1,1,r3], [2,1,r4]] #nodes connected to 3
-}
+def solver(n,graph):
+    ini=[0]*n
+    ini[0]=1
+    matrix=[ini]
+    const=[0]
+    dsu = DisjointSet(n)
 
-ini=[0]*n
-ini[0]=1
-matrix=[ini]
-const=[0]
-dsu = DisjointSet(n)
+    queue = deque([0])
+    visited = {0}
 
-queue = deque([0])
-visited = {0}
+    while queue:
 
-while queue:
+        current_node = queue.popleft()
 
-    current_node = queue.popleft()
+        for edge_info in graph.get(current_node, []):
 
-    for edge_info in graph.get(current_node, []):
+            destination_node = edge_info[0]
+            edge_type=edge_info[1]
+            edge_weight=edge_info[2]
 
-        destination_node = edge_info[0]
-        edge_type=edge_info[1]
-        edge_weight=edge_info[2]
-
-        if edge_type==0 :
-            visited.add(destination_node)
-            dsu.union(current_node, destination_node)
-            w=edge_weight/abs(edge_weight)
-            l=[]
-            for i in range(n):
-                if i==current_node :
-                    l.append(w)
-                elif i==destination_node:
-                    l.append(-1*w)
-                else :
-                    l.append(0)
-            matrix.append(l)
-            const.append(abs(edge_weight))
+            if edge_type==0 :
+                visited.add(destination_node)
+                dsu.union(current_node, destination_node)
+                w=edge_weight/abs(edge_weight)
+                l=[]
+                for i in range(n):
+                    if i==current_node :
+                        l.append(w)
+                    elif i==destination_node:
+                        l.append(-1*w)
+                    else :
+                        l.append(0)
+                matrix.append(l)
+                const.append(abs(edge_weight))
 
 
-        elif destination_node not in visited:
-            visited.add(destination_node)
-            queue.append(destination_node)
+            elif destination_node not in visited:
+                visited.add(destination_node)
+                queue.append(destination_node)
 
 
 
-graph_modified = defaultdict(list)
-for i in range(4):
-    representative = dsu.find(i)
-    graph_modified[representative].append(i)
+    graph_modified = defaultdict(list)
+    for i in range(n):
+        representative = dsu.find(i)
+        graph_modified[representative].append(i)
 
 
-# print(graph)
-for representative, members in graph_modified.items():
-    if len(members)!=1 :
-        continue
-    l=[0]*n
+    # print(graph)
+    for representative, members in graph_modified.items():
+        if len(members)!=1 :
+            continue
+        l=[0]*n
 
-    for node in members:
-        # print(node,end='=>')
-        for child in graph.get(node, []):
-            destination_node = child[0]
-            edge_type=child[1]
-            edge_weight=child[2]
-            
-            l[node]+=(1/edge_weight)
-            l[destination_node]-=(1/edge_weight)
-            
-            # print(destination_node,end=' ')
-        # print()
-    matrix.append(l)
-    const.append(0)
+        for node in members:
+            # print(node,end='=>')
+            for child in graph.get(node, []):
+                destination_node = child[0]
+                edge_type=child[1]
+                edge_weight=child[2]
+                
+                l[node]+=(1/edge_weight)
+                l[destination_node]-=(1/edge_weight)
+                
+                # print(destination_node,end=' ')
+            # print()
+        matrix.append(l)
+        const.append(0)
 
 
-matrix_np=np.array(matrix)
-const_np=np.array(const)
+    matrix_np=np.array(matrix)
+    const_np=np.array(const)
 
-print(matrix_np)
-print(const_np)
+    print(matrix_np)
+    print(const_np)
 
-try:
-    ans = np.linalg.solve(matrix_np, const_np)
-    print("Node voltages:", ans)
-except np.linalg.LinAlgError:
-    print("Circuit is inconsistent")
-
+    try:
+        ans = np.linalg.solve(matrix_np, const_np)
+        return ans
+    except np.linalg.LinAlgError:
+        return "inconsistent or indeterminate system"
 
 
 
