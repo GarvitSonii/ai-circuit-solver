@@ -26,7 +26,7 @@ class DisjointSet:
                 self.parent[rootY] = rootX
                 self.rank[rootX] += 1
 
-
+n=4
 r1=1
 r2=1
 r=1000
@@ -34,16 +34,18 @@ r3=1
 r4=1
 v=20
 
-matrix=[[1,0,0,0]]
-const=[0]
-dsu = DisjointSet(4)
-
 graph={
     0: [[1,1,r1], [2,1,r2], [3,0,v]], #nodes connected to 0
     1: [[0,1,r1], [2,1,r], [3,1,r3]], #nodes connected to 1
     2: [[0,1,r2], [1,1,r], [3,1,r4]], #nodes connected to 2
     3: [[0,0,-v], [1,1,r3], [2,1,r4]] #nodes connected to 3
 }
+
+ini=[0]*n
+ini[0]=1
+matrix=[ini]
+const=[0]
+dsu = DisjointSet(n)
 
 queue = deque([0])
 visited = {0}
@@ -63,7 +65,7 @@ while queue:
             dsu.union(current_node, destination_node)
             w=edge_weight/abs(edge_weight)
             l=[]
-            for i in range(4):
+            for i in range(n):
                 if i==current_node :
                     l.append(w)
                 elif i==destination_node:
@@ -90,7 +92,7 @@ for i in range(4):
 for representative, members in graph_modified.items():
     if len(members)!=1 :
         continue
-    l=[0,0,0,0]
+    l=[0]*n
 
     for node in members:
         # print(node,end='=>')
@@ -114,8 +116,11 @@ const_np=np.array(const)
 print(matrix_np)
 print(const_np)
 
-ans=np.linalg.solve(matrix_np, const_np)
-print(ans)
+try:
+    ans = np.linalg.solve(matrix_np, const_np)
+    print("Node voltages:", ans)
+except np.linalg.LinAlgError:
+    print("Circuit is inconsistent")
 
 
 
